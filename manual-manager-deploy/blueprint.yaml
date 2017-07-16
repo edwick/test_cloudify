@@ -55,6 +55,26 @@ inputs:
     description: Resources URL for manager.tar.gz file
     type: string
     default: 'http://repository.cloudifysource.org/org/cloudify3/3.4.0/ga-RELEASE/cloudify-manager-resources_3.4.0-ga-b400.tar.gz'
+  mgr_blueprints_url:
+    description: URL to download Manager blueprints .tar.gz file
+    type: string
+    default: 'https://github.com/cloudify-cosmo/cloudify-manager-blueprints/archive/3.4.tar.gz'
+  admin_username:
+    description: Cloudify administrator user
+    type: string
+    default: 'admin'
+  admin_password:
+    description: Cloudify admin password (may use a default here if you plan to reset the password as first operation, or use cloudify secrets management)
+    type: string
+    default: 'admin'
+  cloudify_cli_rpm_url:
+    description: URL to download the Cloudify CLI RPM installer tool
+    type: string
+    default: http://repository.cloudifysource.org/org/cloudify3/3.4.0/ga-RELEASE/cloudify-3.4.0~ga-400.el6.x86_64.rpm
+  cloudify_cli_version:
+    description: Version number for Cloudify Command-line Interface (CLI)
+    type: string
+    default: 3.4
 
 dsl_definitions:
   openstack_configuration: &openstack_configuration
@@ -65,6 +85,21 @@ dsl_definitions:
     region: { get_input: region }
 
 node_types:
+  CloudifyToolsInstaller:
+    derived_from: cloudify.nodes.SoftwareComponent
+    properties:
+      cloudify_cli_version:
+        description: Version number for Cloudify Command-line Interface (CLI)
+        type: string
+        default: { get_input: cloudify_cli_version }
+      cloudify_cli_rpm_url:
+        description: URL to download the Cloudify CLI RPM installer tool
+        type: string
+        default: { get_input: cloudify_cli_rpm_url }
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create: scripts/install_cfy_cli_rpm.sh
+
   CloudifyManager:
     derived_from: cloudify.nodes.SoftwareComponent
     properties:
@@ -80,10 +115,10 @@ node_types:
         description: URL source for cloudify manager blueprints
         type: string
         default: https://github.com/cloudify-cosmo/cloudify-manager-blueprints/archive/3.4.tar.gz
-      cli_version:
+      cloudify_cli_version:
         description: Version number for Cloudify Command-line Interface (CLI)
         type: string
-        default: 3.4
+        default: { get_input: cloudify_cli_version }
       cfy_builtin_yaml_url:
         description: URL for Cloudify built-in YAMLs
         type: string
@@ -100,15 +135,24 @@ node_types:
         description: List of Cloudify Wagons to install on the cloudify manager (separated by spaces)
         type: string
         default: 'cloudify-fabric-plugin/1.4.1/cloudify_fabric_plugin-1.4.1-py27-none-linux_x86_64-centos-Core.wgn'
-      public_ip:
-        description: Public IP address to which you want to connect your Cloudify manager
+      admin_username:
+        description: Username of Cloudify admin user
         type: string
-        # NOTE: no default since we need to pull this from the cloudify_manager_vm node
+        default: { get_input: admin_username }
+      admin_password:
+        description: Password of Cloudify admin user
+        type: string
+        default: { get_input: admin_password }
 
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: scripts/download_cloudify_installers.sh
-        configure: scripts/create_bootstrap_inputs_file.py
+        # simple script, no inputs => no extra stuff necessary
+        create:
+          implementation: scripts/download_cloudify_installers.sh
+          inputs:
+            # runtime attributes cannot be set as properties, so they have to go in as inputs to the script.
+            public_ip:
+              description: IP address for cloudify manager
 
 node_templates:
 
@@ -159,12 +203,21 @@ node_templates:
             args:
               security_groups: [{ get_attribute: [ security_group, external_name ]}]
 
+  cloudify_manager_vm_tools_install:
+    type: CloudifyToolsInstaller
+    relationships:
+      - { type: cloudify.relationships.contained_in, target: cloudify_manager_vm }
+
   cloudify_manager_bootstrap:
     type: CloudifyManager
     relationships:
       - { type: cloudify.relationships.contained_in, target: cloudify_manager_vm }
-    properties:
-      public_ip: { get_attribute: [floating_ip, floating_ip_address] }
+      - { type: cloudify.relationships.depends_on, target: cloudify_manager_vm_tools_install }
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create:
+          inputs:
+            public_ip: { get_attribute: [ floating_ip, floating_ip_address ] }
 
 outputs:
   floating_ip:

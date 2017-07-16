@@ -12,15 +12,11 @@ PREREQUISITES:
 2. An SSH key that is accessible on the CURRENTLY RUNNING Cloudify Manager machine.
 
 INPUTS:
-- (Openstack inputs)
-- ssh user key path
-- URL from which to download packages
-- Cloudify admin username/password
-- Cloudify bootstrap-specific inputs
+(TBD)
 
 IMPLEMENTATION:
 Cloudify Manager node will be contained in the VM, and execute the following steps in the install lifecycle:
 
 1. create: Download components and setup environment (shell)
-2. configure: Prepare inputs file (prob. python to manage inputs)
+2. configure: Prepare inputs file (python so we can use the nice YAML library rather than shell tools)
 3. start: Execute bootstrap operation (shell)
