@@ -5,6 +5,10 @@ set -e
 
 cd /tmp
 mkdir -p tools_install ; cd tools_install
+curl -L -O https://bootstrap.pypa.io/get-pip.py
+sudo python get-pip.py
+sudo pip install wagon
+
 curl -L $(ctx node properties cloudify_cli_rpm_url) -o cloudify-installer.rpm
 sudo rpm -i ./cloudify-installer.rpm
 

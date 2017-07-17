@@ -5,6 +5,11 @@ set -e
 # This shell script will download Cloudify resources from input locations, and prepare the VM to bootstrap
 # a Cloudify environment.
 
+which python >> /tmp/bootstrap_script_env.txt
+which wagon >> /tmp/bootstrap_script_env.txt
+which cfy >> /tmp/bootstrap_script_env.txt
+
+
 TEMP_DIR=$(ctx node properties bootstrap_working_directory)
 mkdir -p ${TEMP_DIR}
 
@@ -70,7 +75,6 @@ for y in "${yamls[@]}"; do curl -L --create-dirs -o ${y} ${CLOUDIFY_YAML_BASE_UR
 # STEP 5: Download and install Wagon files
 cd ${OFFLINE_RESOURCES_DIR}
 mkdir -p plugins ; cd plugins
-# TODO: Set wagon base URL and wagon list from ctx
 CLOUDIFY_WAGON_BASE_URL=$(ctx node properties cfy_wagon_url)
 CLOUDIFY_WAGON_LIST=$(ctx node properties cfy_wagon_list)
 declare -a wagon_list=(${CLOUDIFY_WAGON_LIST})
@@ -80,28 +84,21 @@ for y in "${wagon_list[@]}"; do curl -L -O ${CLOUDIFY_WAGON_BASE_URL}/${y}; done
 
 ###############################
 # STEP 6 (prepare manager inputs file). Use heredoc to echo env variables directly to yaml file.
-# Recall that heredoc doesn't inherit the ctx variable
-ADMIN_USERNAME=${ctx node properties admin_username}
-ADMIN_PASSWORD=${ctx node properties admin_password}
-echo "Admin username/password is ${ADMIN_USERNAME}/${ADMIN_PASSWORD}" >> /tmp/admin_info.txt
-cat << EOF > ${WORKING_DIR}/manager-inputs.yaml
+# Download resource from blueprint directory and use jinja renderer to substitute in values
+# as needed.
+# TODO: Get keypair on machine in ${WORKING_DIR}
+
+ctx download-resource-and-render resources/manager-inputs.yaml ${WORKING_DIR}/manager-inputs.yaml
+# IPs have to come in as inputs since they are run-time variables. Append appropriate
+# entries to the manager inputs file.
+cat << EOF >> ${WORKING_DIR}/manager-inputs.yaml
+
 public_ip: ${public_ip}
 private_ip: ${public_ip}
-manager_resources_package: file://${TEMP_DIR}/cloudify-manager-resources.tar.gz
-admin_username: ${ADMIN_USERNAME}
-admin_password: ${ADMIN_PASSWORD}
-dsl_resources:
-  - {'"'"'source_path'"'"': '"'"'${OFFLINE_RESOURCES_DIR}/dsl/cloudify/3.4.1/types.yaml'"'"', '"'"'destination_path'"'"': '"'"'/spec/cloudify/3.4.1/types.yaml'"'"'}
-  - {'"'"'source_path'"'"': '"'"'${OFFLINE_RESOURCES_DIR}/dsl/fabric-plugin/1.4.1/plugin.yaml'"'"', '"'"'destination_path'"'"': '"'"'/spec/fabric-plugin/1.4.1/plugin.yaml'"'"'}
-  - {'"'"'source_path'"'"': '"'"'${OFFLINE_RESOURCES_DIR}/dsl/openstack-plugin/1.4/plugin.yaml'"'"', '"'"'destination_path'"'"': '"'"'/spec/openstack-plugin/1.4/plugin.yaml'"'"'}
-  - {'"'"'source_path'"'"': '"'"'${OFFLINE_RESOURCES_DIR}/dsl/aws-plugin/1.4.1/plugin.yaml'"'"', '"'"'destination_path'"'"': '"'"'/spec/aws-plugin/1.4.1/plugin.yaml'"'"'}
-  - {'"'"'source_path'"'"': '"'"'${OFFLINE_RESOURCES_DIR}/dsl/tosca-vcloud-plugin/1.3.1/plugin.yaml'"'"', '"'"'destination_path'"'"': '"'"'/spec/tosca-vcloud-plugin/1.3.1/plugin.yaml'"'"'}
-  - {'"'"'source_path'"'"': '"'"'${OFFLINE_RESOURCES_DIR}/dsl/vsphere-plugin/2.0/plugin.yaml'"'"', '"'"'destination_path'"'"': '"'"'/spec/vsphere-plugin/2.0/plugin.yaml'"'"'}
-  - {'"'"'source_path'"'"': '"'"'${OFFLINE_RESOURCES_DIR}/dsl/diamond-plugin/1.3.3/plugin.yaml'"'"', '"'"'destination_path'"'"': '"'"'/spec/diamond-plugin/1.3.3/plugin.yaml'"'"'}
 EOF
 
 ###############################
-# STEP 7: First part - Initialize bootstrap directory
+# STEP 7: Initialize bootstrap directory
 # This creates ${WORKING_DIR}/.cloudify/config.yaml, which we will modify in the configure step
 # for an offline bootstrap.
 cd ${WORKING_DIR}
@@ -115,3 +112,6 @@ import_resolver:
       - "http://www.getcloudify.org/spec": "file://${OFFLINE_RESOURCES_DIR}/dsl"
 EOF
 
+###############################
+# STEP 8: Kick off bootstrap
+#sudo cfy bootstrap -p $MANAGER_BLUEPRINTS_DIR/simple-manager-blueprint.yaml -i manager-inputs.yaml --debug | tee ${WORKING_DIR}/bootstrap.log

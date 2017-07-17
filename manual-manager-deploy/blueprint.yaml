@@ -52,13 +52,21 @@ inputs:
     type: string
     default: ''
   mgr_resources_url:
-    description: Resources URL for manager.tar.gz file
+    description: Full URL to download Resources for manager.tar.gz file
     type: string
     default: 'http://repository.cloudifysource.org/org/cloudify3/3.4.0/ga-RELEASE/cloudify-manager-resources_3.4.0-ga-b400.tar.gz'
   mgr_blueprints_url:
     description: URL to download Manager blueprints .tar.gz file
     type: string
     default: 'https://github.com/cloudify-cosmo/cloudify-manager-blueprints/archive/3.4.tar.gz'
+  cfy_builtin_yaml_url:
+    description: Base URL to download any Cloudify built-in YAML files.
+    type: string
+    default: "http://www.getcloudify.org/spec"
+  cfy_wagon_url:
+    description: Base URL to download any manual Cloudify Wagon files
+    type: string
+    default: "http://repository.cloudifysource.org/org/cloudify3/wagons"
   admin_username:
     description: Cloudify administrator user
     type: string
@@ -68,7 +76,7 @@ inputs:
     type: string
     default: 'admin'
   cloudify_cli_rpm_url:
-    description: URL to download the Cloudify CLI RPM installer tool
+    description: Full URL to download the Cloudify CLI RPM installer tool
     type: string
     default: http://repository.cloudifysource.org/org/cloudify3/3.4.0/ga-RELEASE/cloudify-3.4.0~ga-400.el6.x86_64.rpm
   cloudify_cli_version:
@@ -114,7 +122,7 @@ node_types:
       mgr_blueprints_url:
         description: URL source for cloudify manager blueprints
         type: string
-        default: https://github.com/cloudify-cosmo/cloudify-manager-blueprints/archive/3.4.tar.gz
+        default: { get_input: mgr_blueprints_url }
       cloudify_cli_version:
         description: Version number for Cloudify Command-line Interface (CLI)
         type: string
@@ -122,7 +130,7 @@ node_types:
       cfy_builtin_yaml_url:
         description: URL for Cloudify built-in YAMLs
         type: string
-        default: http://www.getcloudify.org/spec
+        default: { get_input: cfy_builtin_yaml_url }
       cfy_builtin_yaml_list:
         description: List of Cloudify built-in YAML files to install (separated by spaces)
         type: string
@@ -130,7 +138,7 @@ node_types:
       cfy_wagon_url:
         description: URL to download Cloudify Wagons
         type: string
-        default: http://repository.cloudifysource.org/cloudify/wagons
+        default: { get_input: cfy_wagon_url }
       cfy_wagon_list:
         description: List of Cloudify Wagons to install on the cloudify manager (separated by spaces)
         type: string
@@ -143,12 +151,14 @@ node_types:
         description: Password of Cloudify admin user
         type: string
         default: { get_input: admin_password }
-
+      key_pair_name:
+        description: Name of Openstack keypair used for ssh
+        type: string
+        default: { get_input: key_pair_name }
     interfaces:
       cloudify.interfaces.lifecycle:
-        # simple script, no inputs => no extra stuff necessary
         create:
-          implementation: scripts/download_cloudify_installers.sh
+          implementation: scripts/bootstrap_cloudify_manager.sh
           inputs:
             # runtime attributes cannot be set as properties, so they have to go in as inputs to the script.
             public_ip:
@@ -186,6 +196,9 @@ node_templates:
     type: cloudify.openstack.nodes.Server
     properties:
       openstack_config: *openstack_configuration
+#      agent_config:
+#        default:
+#          install_method: none
       agent_config:
         user: { get_input: agent_user }
         key: { get_property: [ keypair, private_key_path ] }

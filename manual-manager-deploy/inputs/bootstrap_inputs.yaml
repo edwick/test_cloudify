@@ -16,3 +16,4 @@ region: RegionOne
 mgr_resources_url: http://10.239.0.157:8081/cloudify-manager-resources_3.4.0-ga-b400.tar.gz
 mgr_blueprints_url: http://10.239.0.157:8081/3.4.tar.gz
 cloudify_cli_rpm_url: http://10.239.0.157:8081/cloudify-3.4.0~ga-400.el6.x86_64.rpm
+cfy_wagon_url: http://10.239.0.157:8081/
