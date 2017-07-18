@@ -83,10 +83,6 @@ inputs:
     description: Full URL to download the Cloudify CLI RPM installer tool
     type: string
     default: http://repository.cloudifysource.org/org/cloudify3/3.4.0/ga-RELEASE/cloudify-3.4.0~ga-400.el6.x86_64.rpm
-  cloudify_cli_version:
-    description: Version number for Cloudify Command-line Interface (CLI)
-    type: string
-    default: 3.4
 
 dsl_definitions:
   openstack_configuration: &openstack_configuration
@@ -100,10 +96,6 @@ node_types:
   CloudifyToolsInstaller:
     derived_from: cloudify.nodes.SoftwareComponent
     properties:
-      cloudify_cli_version:
-        description: Version number for Cloudify Command-line Interface (CLI)
-        type: string
-        default: { get_input: cloudify_cli_version }
       cloudify_cli_rpm_url:
         description: URL to download the Cloudify CLI RPM installer tool
         type: string
@@ -153,10 +145,6 @@ node_types:
         description: URL source for cloudify manager blueprints
         type: string
         default: { get_input: mgr_blueprints_url }
-      cloudify_cli_version:
-        description: Version number for Cloudify Command-line Interface (CLI)
-        type: string
-        default: { get_input: cloudify_cli_version }
       cfy_builtin_yaml_url:
         description: URL for Cloudify built-in YAMLs
         type: string
