@@ -51,6 +51,10 @@ inputs:
       OpenStack region to use.
     type: string
     default: ''
+  bootstrap_working_directory:
+    description: Location on the target VM to drop all Cloudify bootstrap files.
+    type: string
+    default: /tmp
   mgr_resources_url:
     description: Full URL to download Resources for manager.tar.gz file
     type: string
@@ -114,7 +118,33 @@ node_types:
       bootstrap_working_directory:
         description: Location on the VM to download and install working files for the Cloudify manager bootstrap
         type: string
-        default: /tmp
+        default: { get_input: bootstrap_working_directory }
+      # Define sub-variables. These are properties so we can keep them consistent across
+      # files and steps, but we don't really make them settable via inputs.
+      bootstrap_root_subdir:
+        description: sub-directory (created off of bootstrap_working_directory) to drop bootstrap files
+        type: string
+        default: cloudify-bootstrap
+      manager_subdir:
+        description: sub-directory (created off bootstrap_working_directory) to hold bootstrap inputs and log files
+        type: string
+        default: manager
+      offline_subdir:
+        description: sub-directory (created off bootstrap_working_directory) to hold all offline yaml/plugin resources
+        type: string
+        default: offline-resources
+      manager_blueprints_subdir:
+        description: sub-directory (created off bootstrap_working_directory) to hold all manager blueprints
+        type: string
+        default: manager-blueprints
+      dsl_subdir:
+        description: sub-directory (created off offline_subdir) to hold all DSL resources
+        type: string
+        default: dsl
+      cfy_dsl_subdir:
+        description: sub-directory (created off the dsl_subdir) to hold Cloudify files for offline bootstrap.
+        type: string
+        default: cloudify
       mgr_resources_url:
         description: URL to download cloudify manager resources package from
         type: string

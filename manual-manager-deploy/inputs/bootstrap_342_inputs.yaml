@@ -1,0 +1,19 @@
+agent_user: centos
+image: CentOS-7-x86_64-GenericCloud-1608
+flavor: m1.large
+network_name: internal
+floating_network_id: GATEWAY_NET
+key_pair_name: cfy_ha
+security_group_name: cfy_manager_open
+private_key_path: /home/centos/cfy_ha.pem
+
+keystone_username: ed.liu
+keystone_password: cqQfU6iK
+keystone_tenant_name: ed.liu-tenant
+keystone_url: https://rackspace-api.gigaspaces.com:5000/v2.0
+region: RegionOne
+
+mgr_resources_url: http://10.239.0.157:8081/cloudify-manager-resources_3.4.2-sp-b420.tar.gz
+mgr_blueprints_url: http://10.239.0.157:8081/3.4.2.tar.gz
+cloudify_cli_rpm_url: http://10.239.0.157:8081/cloudify-3.4.2-sp-420.el6.x86_64.rpm
+cfy_wagon_url: http://10.239.0.157:8081/

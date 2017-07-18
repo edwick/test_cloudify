@@ -5,13 +5,8 @@
 # Provider specific Inputs
 #############################
 
-# PUBLIC AND PRIVATE IPs appended by shell script afterwards
-
-# SSH user used to connect to the manager
-ssh_user: 'centos'
-
-# SSH key path used to connect to the manager
-ssh_key_filename: '{{ ctx.node.properties.bootstrap_working_directory}}/cloudify-bootstrap/manager/{{ ctx.node.properties.key_pair_name }}.pem'
+# PUBLIC AND PRIVATE IPs are at the end of this file.
+# SSH user and key file also at the end of this file.
 
 # This is the user with which the Manager will try to connect to the application hosts.
 #agents_user: ''
@@ -55,7 +50,7 @@ admin_password: {{ ctx.node.properties.admin_password }}
 #############################
 # Manager Resources Package
 #############################
-manager_resources_package: file://{{ ctx.node.properties.bootstrap_working_directory }}/cloudify-manager-resources.tar.gz
+manager_resources_package: {{ ctx.node.properties.mgr_resources_url }}
 
 # Providing a checksum file url will allow validating the resources package.
 # By default, no validation is performed. Providing a checksum file will use
@@ -250,10 +245,10 @@ manager_resources_package: file://{{ ctx.node.properties.bootstrap_working_direc
 # will reside on the manager and enable offline deployment. `dsl_resources`
 # should contain any resource needed in the parsing process (i.e. plugin.yaml files)
 dsl_resources:
-  - {'source_path': '{{ ctx.node.properties.bootstrap_working_directory }}/cloudify-bootstrap/offline-resources/dsl/cloudify/3.4.1/types.yaml', 'destination_path': '/spec/cloudify/3.4.1/types.yaml'}
-  - {'source_path': '{{ ctx.node.properties.bootstrap_working_directory }}/cloudify-bootstrap/offline-resources/dsl/fabric-plugin/1.4.1/plugin.yaml', 'destination_path': '/spec/fabric-plugin/1.4.1/plugin.yaml'}
-  - {'source_path': '{{ ctx.node.properties.bootstrap_working_directory }}/cloudify-bootstrap/offline-resources/dsl/openstack-plugin/1.4/plugin.yaml', 'destination_path': '/spec/openstack-plugin/1.4/plugin.yaml'}
-  - {'source_path': '{{ ctx.node.properties.bootstrap_working_directory }}/cloudify-bootstrap/offline-resources/dsl/aws-plugin/1.4.1/plugin.yaml', 'destination_path': '/spec/aws-plugin/1.4.1/plugin.yaml'}
-  - {'source_path': '{{ ctx.node.properties.bootstrap_working_directory }}/cloudify-bootstrap/offline-resources/dsl/tosca-vcloud-plugin/1.3.1/plugin.yaml', 'destination_path': '/spec/tosca-vcloud-plugin/1.3.1/plugin.yaml'}
-  - {'source_path': '{{ ctx.node.properties.bootstrap_working_directory }}/cloudify-bootstrap/offline-resources/dsl/vsphere-plugin/2.0/plugin.yaml', 'destination_path': '/spec/vsphere-plugin/2.0/plugin.yaml'}
-  - {'source_path': '{{ ctx.node.properties.bootstrap_working_directory }}/cloudify-bootstrap/offline-resources/dsl/diamond-plugin/1.3.3/plugin.yaml', 'destination_path': '/spec/diamond-plugin/1.3.3/plugin.yaml'}
+  - {'source_path': '{{ ctx.node.properties.bootstrap_working_directory }}/{{ ctx.node.properties.bootstrap_root_subdir }}/{{ ctx.node.properties.offline_subdir }}/{{ ctx.node.properties.dsl_subdir }}/{{ ctx.node.properties.cfy_dsl_subdir }}/spec/cloudify/3.4.1/types.yaml', 'destination_path': '/spec/cloudify/3.4.1/types.yaml'}
+  - {'source_path': '{{ ctx.node.properties.bootstrap_working_directory }}/{{ ctx.node.properties.bootstrap_root_subdir }}/{{ ctx.node.properties.offline_subdir }}/{{ ctx.node.properties.dsl_subdir }}/{{ ctx.node.properties.cfy_dsl_subdir }}/spec/fabric-plugin/1.4.1/plugin.yaml', 'destination_path': '/spec/fabric-plugin/1.4.1/plugin.yaml'}
+  - {'source_path': '{{ ctx.node.properties.bootstrap_working_directory }}/{{ ctx.node.properties.bootstrap_root_subdir }}/{{ ctx.node.properties.offline_subdir }}/{{ ctx.node.properties.dsl_subdir }}/{{ ctx.node.properties.cfy_dsl_subdir }}/spec/openstack-plugin/1.4/plugin.yaml', 'destination_path': '/spec/openstack-plugin/1.4/plugin.yaml'}
+  - {'source_path': '{{ ctx.node.properties.bootstrap_working_directory }}/{{ ctx.node.properties.bootstrap_root_subdir }}/{{ ctx.node.properties.offline_subdir }}/{{ ctx.node.properties.dsl_subdir }}/{{ ctx.node.properties.cfy_dsl_subdir }}/spec/aws-plugin/1.4.1/plugin.yaml', 'destination_path': '/spec/aws-plugin/1.4.1/plugin.yaml'}
+  - {'source_path': '{{ ctx.node.properties.bootstrap_working_directory }}/{{ ctx.node.properties.bootstrap_root_subdir }}/{{ ctx.node.properties.offline_subdir }}/{{ ctx.node.properties.dsl_subdir }}/{{ ctx.node.properties.cfy_dsl_subdir }}/spec/tosca-vcloud-plugin/1.3.1/plugin.yaml', 'destination_path': '/spec/tosca-vcloud-plugin/1.3.1/plugin.yaml'}
+  - {'source_path': '{{ ctx.node.properties.bootstrap_working_directory }}/{{ ctx.node.properties.bootstrap_root_subdir }}/{{ ctx.node.properties.offline_subdir }}/{{ ctx.node.properties.dsl_subdir }}/{{ ctx.node.properties.cfy_dsl_subdir }}/spec/vsphere-plugin/2.0/plugin.yaml', 'destination_path': '/spec/vsphere-plugin/2.0/plugin.yaml'}
+  - {'source_path': '{{ ctx.node.properties.bootstrap_working_directory }}/{{ ctx.node.properties.bootstrap_root_subdir }}/{{ ctx.node.properties.offline_subdir }}/{{ ctx.node.properties.dsl_subdir }}/{{ ctx.node.properties.cfy_dsl_subdir }}/spec/diamond-plugin/1.3.3/plugin.yaml', 'destination_path': '/spec/diamond-plugin/1.3.3/plugin.yaml'}
