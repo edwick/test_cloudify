@@ -1,0 +1,9 @@
+plugins:
+  sample-update:
+    # Could be 'central_deployment_agent' or 'host_agent'.
+    # If 'central_deployment_agent', this plugin will be executed on the
+    # CLOUDIFY MANAGER, otherwise it will be executed on the managed VM.
+    executor: host_agent
+    source: sample-update
+    package_name: sample_update_plugin
+    package_version: '0.1'
